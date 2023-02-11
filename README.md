@@ -22,7 +22,7 @@ The server has the following API endpoints for various operations:
 To run the server, follow these steps:
 
 1. Install the required packages by running `pip install -r requirements.txt`
-2. Create a MySQL database and update the credentials in the `config.py` file.
+2. Create a MySQL database and update the credentials in the `example.env` file. Then run `setup.py` to load in dummy data
 3. Start the server by running `python app.py`
 
 ## Frontend
