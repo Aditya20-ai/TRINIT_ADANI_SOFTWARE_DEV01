@@ -15,14 +15,13 @@ def create_profile():
     name = data['name']
     email = data['email']
     donation_preferences = data['donation_preferences']
-    try:            
-        if connection :
-            query = "INSERT INTO user_data (ID, name, email, donation_preferences) VALUES (%s, %s, %s, %s)"
-            values = (user_id, name, email, donation_preferences)
-            connection.insert_records(query, values)
-            return jsonify({'message': 'Profile created successfully', 'QUERY': 'OK'})
-        else:
+    try:        
+        if not connection:
             return jsonify({'message': 'Failed to connect to database', 'QUERY': 'FAILED'})
+        values = (user_id, name, email, donation_preferences)
+        query = "INSERT INTO user_data (ID, name, email, donation_preferences) VALUES (%s, %s, %s, %s)"
+        connection.insert_records(query, values)
+        return jsonify({'message': 'Profile created successfully', 'QUERY': 'OK'})
     except Exception as e:
         return jsonify({'QUERY': 'FAILED', 'data' : {'error':  str(e)}})
 
@@ -35,11 +34,12 @@ def get_profile():
         return jsonify({'QUERY': 'FAILED', 'data': 'Invalid user_id'})
     try:
         if connection :
-            query = f"SELECT * FROM user_data WHERE ID = '{user_id}'"
-            result = connection.select_records(query)
+            query = "SELECT * FROM user_data WHERE ID = %s"
+            value = (user_id,)
+            result = connection.select_records(query, value)
             if result:
                 result = list(result)
-                result[-1] = list_parser(result[-1])
+                result[-1] = eval(result[-1])
                 return jsonify({'QUERY': 'OK', 'data': result})
             else:
                 return jsonify({'QUERY': 'FAILED', 'data': 'No data found'})
@@ -59,16 +59,33 @@ def update_profile():
     email = data['email']
     donation_preferences = data['donation_preferences']
     try:
-        if connection :
-            #query = f"UPDATE user_data SET name = '{name}', email = '{email}', donation_preferences = '{donation_preferences}' WHERE ID = '{user_id}'"
-            query = "UPDATE user_data SET name = %s, email = %s, donation_preferences = %s WHERE ID = %s"
-            values = (name, email, donation_preferences, user_id)
-            connection.insert_records(query, values)
-            return jsonify({'message': 'Profile updated successfully', 'QUERY': 'OK'})
-        else:
+        if not connection:
             return jsonify({'message': 'Failed to connect to database', 'QUERY': 'FAILED'})
+        values = (name, email, donation_preferences, user_id)
+        query = "UPDATE user_data SET name = %s, email = %s, donation_preferences = %s WHERE ID = %s"
+        connection.insert_records(query, values)
+        return jsonify({'message': 'Profile updated successfully', 'QUERY': 'OK'})
     except Exception as e:
         return jsonify({'QUERY': 'FAILED', 'data' : {'error':  str(e)}})
+
+@app.route('/delete-profile', methods=['POST'])
+def delete_profile():
+    if request.method != 'POST':
+        return jsonify({'message': 'Invalid request method'})
+
+    if not (data := request.form):
+        return jsonify({'message': 'Invalid data'})
+    user_id = data['user_id']
+    try:
+        if not connection:
+            return jsonify({'message': 'Failed to connect to database', 'QUERY': 'FAILED'})
+        values = (user_id,)
+        query = "DELETE FROM user_data WHERE ID = %s"
+        connection.insert_records(query, values)
+        return jsonify({'message': 'Profile deleted successfully', 'QUERY': 'OK'})
+    except Exception as e:
+        return jsonify({'QUERY': 'FAILED', 'data' : {'error':  str(e)}})
+
 
 @app.route('/upload-image', methods=['POST'])
 def upload_image():

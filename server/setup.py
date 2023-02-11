@@ -7,6 +7,7 @@ conn = mysql.connector.connect(
     host=environ.get('DB_HOST'),
     user=environ.get('DB_USER'),
     passwd = environ.get('DB_PASS'),
+    #database=environ.get('DB_NAME'),
 );
 
 def create_db(connection):
@@ -16,41 +17,42 @@ def create_db(connection):
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS user_data (
     ID varchar(255) PRIMARY KEY,
-    name varchar(32),
-    email varchar(32),
+    name varchar(32) NOT NULL,
+    email varchar(32) UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     donation_preferences JSON
     );
     """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS ngo_data (
-    USER_ID varchar(255),
+    USER_ID varchar(255) NOT NULL,
     NGO_ID varchar(255) PRIMARY KEY,
-    name varchar(32),
+    name varchar(32) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    mission varchar(255),
+    mission varchar(255) NOT NULL,
     history varchar(255),
     impact varchar(255),
     plans varchar(255),
-    funding_needs varchar(255),
-    location varchar(255),
-    type JSON
+    banner_url varchar(255),
+    funding_needs varchar(255) NOT NULL,
+    location varchar(255) NOT NULL,
+    type JSON NOT NULL
     );
     """)
 
 def dummy_data(connection):
     cursor = connection.cursor()
-    cursor.execute("""
+    cursor.execute(r"""
     INSERT INTO user_data (ID, name, email, donation_preferences) 
     VALUES 
-    ("user1", "John Doe", "johndoe@email.com", JSON_ARRAY("'Environmental', 'Social Welfare'")),
-    ("user2", "Jane Smith", "janesmith@email.com", JSON_ARRAY("'Disaster Relief', 'Education', 'Health'")),
-    ("user3", "Bob Brown", "bobbrown@email.com", JSON_ARRAY("'Animal Welfare', 'Microfinance', 'Women\'s Empowerment'")),
-    ("user4", "Emma Wilson", "emmawilson@email.com", JSON_ARRAY("'Children\'s Rights', 'Disability Rights', 'LGBTQ+ Rights'")),
-    ("user5", "Michael Johnson", "michaeljohnson@email.com", JSON_ARRAY("'Poverty Alleviation', 'Agriculture and Rural Development', 'Water and Sanitation'"));
+    ("user1", "John Doe", "johndoe@email.com", JSON_ARRAY('Environmental', 'Social Welfare')),
+    ("user2", "Jane Smith", "janesmith@email.com", JSON_ARRAY('Disaster Relief', 'Education', 'Health')),
+    ("user3", "Bob Brown", "bobbrown@email.com", JSON_ARRAY('Animal Welfare', 'Microfinance', 'Women\'s Empowerment')),
+    ("user4", "Emma Wilson", "emmawilson@email.com", JSON_ARRAY('Children\'s Rights', 'Disability Rights', 'LGBTQ+ Rights')),
+    ("user5", "Michael Johnson", "michaeljohnson@email.com", JSON_ARRAY('Poverty Alleviation', 'Agriculture and Rural Development', 'Water and Sanitation'));
     """);
     #connection.commit()
-    cursor.execute("""
+    cursor.execute(r"""
     INSERT INTO ngo_data (USER_ID, NGO_ID, name, mission, history, impact, plans, funding_needs, location, type) 
     VALUES 
     ("user1", "ngo1", "Greenpeace", "To ensure the ability of the Earth to nurture life in all its diversity.", "Founded in 1971, Greenpeace has been at the forefront of environmental activism.", "Greenpeace has influenced major environmental decisions and actions by governments and corporations.", "Greenpeace aims to continue its environmental activism and expand its reach.", "Greenpeace needs funding to continue its environmental activism and expand its reach.", "International", JSON_ARRAY("Environmental")),
