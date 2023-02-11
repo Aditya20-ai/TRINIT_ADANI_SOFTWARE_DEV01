@@ -43,3 +43,10 @@ To run the frontend, follow these steps:
 ## Deployment
 
 The project can be deployed to a hosting platform like Heroku or AWS. The server can be deployed using a web server like Gunicorn and the frontend can be built and served using a static file server like Nginx.
+
+## Demonstration:
+Refer to https://drive.google.com/drive/folders/1HBswePEFHLsj0S04nLqXbd0drqDy75tQ?usp=share_link for images and videos of this in action!
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
