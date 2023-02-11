@@ -92,8 +92,7 @@ def get_profile():
             return jsonify({'QUERY': 'FAILED', 'data': 'Failed to connect to database'})
         query = "SELECT * FROM user_data WHERE ID = %s"
         value = (user_id,)
-        result = connection.select_records(query, value)
-        if result:
+        if result := connection.select_records(query, value):
             result = list(result)
             result[-1] = eval(result[-1])
             return jsonify({'QUERY': 'OK', 'data': result})
@@ -153,17 +152,16 @@ def upload_image():
         return jsonify({'message': 'Invalid data'})
     image = data['file']
     try:
-        if connection:
-            image_filename = f"{randbits(64)}.png"
-            if not os.path.exists('temp/images'):
-                os.makedirs('temp/images')
-            image_path = f"temp/images/{image_filename}"
-            image.save(image_path)
-            image_link = uploader.upload_image(image_path)
-            os.remove(image_path)
-            return jsonify({'message': 'Image uploaded successfully', 'QUERY': 'OK', 'data': image_link})
-        else:
+        if not connection:
             return jsonify({'message': 'Failed to connect to database', 'QUERY': 'FAILED'})
+        image_filename = f"{randbits(64)}.png"
+        if not os.path.exists('temp/images'):
+            os.makedirs('temp/images')
+        image_path = f"temp/images/{image_filename}"
+        image.save(image_path)
+        image_link = uploader.upload_image(image_path)
+        os.remove(image_path)
+        return jsonify({'message': 'Image uploaded successfully', 'QUERY': 'OK', 'data': image_link})
     except Exception as e:
         return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
 
