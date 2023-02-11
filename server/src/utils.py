@@ -129,12 +129,10 @@ class ZoomMeeting:
                           }
         headers = {'authorization': 'Bearer ' + self.get_token(),
                    'content-type': 'application/json'}
-        # todo: fix token
         r = requests.post(
             f'https://api.zoom.us/v2/users/me/meetings',
             headers=headers, data=json.dumps(meetingdetails))
         y = json.loads(r.text)
-        print(json.dumps(y, indent=4, sort_keys=True))
         join_URL = y["join_url"]
         meetingPassword = y["password"]
         return {"url": join_URL, "password": meetingPassword}
