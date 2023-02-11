@@ -12,7 +12,6 @@ class MysqlConnection():
                 user=environ.get('DB_USER'),
                 passwd = environ.get('DB_PASS'),
                 database=environ.get('DB_NAME'),
-                connect_timeout=5
             )
         except mysql.connector.Error as e:
             # TODO: Replace print statement with loggers
