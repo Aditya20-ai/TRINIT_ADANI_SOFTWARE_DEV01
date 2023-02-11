@@ -2,13 +2,14 @@ import mysql.connector
 from dotenv import load_dotenv, find_dotenv
 from os import environ
 
-load_dotenv (find_dotenv())
+load_dotenv(find_dotenv())
 conn = mysql.connector.connect(
     host=environ.get('DB_HOST'),
     user=environ.get('DB_USER'),
-    passwd = environ.get('DB_PASS'),
-    #database=environ.get('DB_NAME'),
+    passwd=environ.get('DB_PASS'),
+    # database=environ.get('DB_NAME'),
 );
+
 
 def create_db(connection):
     cursor = connection.cursor()
@@ -40,6 +41,7 @@ def create_db(connection):
     );
     """)
 
+
 def dummy_data(connection):
     cursor = connection.cursor()
     cursor.execute(r"""
@@ -51,7 +53,7 @@ def dummy_data(connection):
     ("user4", "Emma Wilson", "emmawilson@email.com", JSON_ARRAY('Children\'s Rights', 'Disability Rights', 'LGBTQ+ Rights')),
     ("user5", "Michael Johnson", "michaeljohnson@email.com", JSON_ARRAY('Poverty Alleviation', 'Agriculture and Rural Development', 'Water and Sanitation'));
     """);
-    #connection.commit()
+    # connection.commit()
     cursor.execute(r"""
     INSERT INTO ngo_data (USER_ID, NGO_ID, name, mission, history, impact, plans, funding_needs, location, type) 
     VALUES 
@@ -60,6 +62,8 @@ def dummy_data(connection):
     ("user3", "ngo3", "World Wildlife Fund", "To conserve nature and reduce the most pressing threats to the diversity of life on Earth.", "Founded in 1961, the World Wildlife Fund has been working to conserve nature and reduce threats to biodiversity.", "The World Wildlife Fund has made significant progress in conserving nature and reducing threats to biodiversity.", "The World Wildlife Fund plans to continue its work in conserving nature and reducing threats to biodiversity.", "The World Wildlife Fund needs funding to continue its work in conserving nature and reducing threats to biodiversity.", "International", JSON_ARRAY("Animal Welfare"));
     """)
     connection.commit()
+
+
 if __name__ == "__main__":
     create_db(conn)
     dummy_data(conn)
