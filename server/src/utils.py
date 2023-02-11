@@ -88,8 +88,8 @@ def list_parser(string):
 
 class ZoomMeeting:
     def __init__(self):
-        self.API_KEY = 'Your API key'
-        self.API_SEC = 'Your API secret'
+        self.API_KEY = environ.get('ZOOM_API_KEY')
+        self.API_SEC = environ.get('ZOOM_API_SECRET')
         self.token = ""
 
     def get_token(self):
@@ -120,19 +120,23 @@ class ZoomMeeting:
                                          },
                           "settings": {"host_video": "true",
                                        "participant_video": "true",
-                                       "join_before_host": "False",
+                                       "join_before_host": "true",
                                        "mute_upon_entry": "False",
                                        "watermark": "true",
                                        "audio": "voip",
                                        "auto_recording": "cloud"
                                        }
                           }
-        headers = {'authorization': 'Bearer ' + self.get_token(),
-                   'content-type': 'application/json'}
+        headers = {
+            'authorization': f'Bearer {self.get_token()}',
+            'content-type': 'application/json',
+        }
         r = requests.post(
-            f'https://api.zoom.us/v2/users/me/meetings',
+            'https://api.zoom.us/v2/users/me/meetings',
             headers=headers, data=json.dumps(meetingdetails))
+        print(r.text)
         y = json.loads(r.text)
+        print(y)
         join_URL = y["join_url"]
         meetingPassword = y["password"]
         return {"url": join_URL, "password": meetingPassword}
