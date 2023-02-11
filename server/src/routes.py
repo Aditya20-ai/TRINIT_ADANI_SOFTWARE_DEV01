@@ -1,7 +1,8 @@
+import datetime
 import os
 
 from .app import app, jsonify, request
-from .utils import MysqlConnection, UploadHandler, list_parser
+from .utils import MysqlConnection, UploadHandler, list_parser, ZoomMeeting
 from secrets import randbits
 
 connection = MysqlConnection()
@@ -79,7 +80,6 @@ def create_crowdfunding():
         return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
 
 
-
 @app.route('/api/get-profile')
 def get_profile():
     if request.method != 'GET':
@@ -88,7 +88,7 @@ def get_profile():
     if not user_id:
         return jsonify({'QUERY': 'FAILED', 'data': 'Invalid user_id'})
     try:
-        if not connection :
+        if not connection:
             return jsonify({'QUERY': 'FAILED', 'data': 'Failed to connect to database'})
         query = "SELECT * FROM user_data WHERE ID = %s"
         value = (user_id,)
@@ -164,6 +164,13 @@ def upload_image():
         return jsonify({'message': 'Image uploaded successfully', 'QUERY': 'OK', 'data': image_link})
     except Exception as e:
         return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
+
+
+@app.route("/create-meeting", methods=['GET'])
+def create_meeting():
+    meeting = ZoomMeeting()
+    result = meeting.create_meeting(topic="Test Meeting", duration=40, time=datetime.datetime.now())
+    return jsonify(result)
 
 
 @app.route('/api/shutdown')
