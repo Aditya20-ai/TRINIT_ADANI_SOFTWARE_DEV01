@@ -1,15 +1,14 @@
-import datetime
 import os
 
 from .app import app, jsonify, request
-from .utils import MysqlConnection, UploadHandler, list_parser, ZoomMeeting
+from .utils import MysqlConnection, UploadHandler, list_parser
 from secrets import randbits
 
 connection = MysqlConnection()
 uploader = UploadHandler()
 
 
-@app.route('/create-profile', methods=['POST'])
+@app.route('/api/create-profile', methods=['POST'])
 def create_profile():
     if request.method != 'POST':
         return jsonify({'message': 'Invalid request method'})
@@ -31,7 +30,57 @@ def create_profile():
         return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
 
 
-@app.route('/get-profile')
+@app.route('/api/create-crowdfunding', methods=['POST'])
+def create_crowdfunding():
+    if request.method != 'POST':
+        return jsonify({'message': 'Invalid request method'})
+    """
+    USER_ID varchar(32) NOT NULL,
+    NGO_ID varchar(32) PRIMARY KEY,
+    name varchar(32) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    mission varchar(255) NOT NULL,
+    history varchar(255),
+    impact varchar(255),
+    plans varchar(255),
+    banner_url varchar(64),
+    funding_needs varchar(255) NOT NULL,
+    location varchar(255) NOT NULL,
+    type JSON NOT NULL
+    
+    
+    """
+    if not (data := request.form):
+        return jsonify({'message': 'Invalid data'})
+    user_id = data['user_id']
+    ngo_id = data['ngo_id']
+    name = data['name']
+    mission = data['mission']
+    history = data['history']
+    impact = data['impact']
+    plans = data['plans']
+    banner_url = data['banner_url']
+    funding_needs = data['funding_needs']
+    location = data['location']
+    type = data['type']
+    title = data['title']
+    description = data['description']
+    target_amount = data['target_amount']
+    image = request.files['image']
+    try:
+        if not connection:
+            return jsonify({'message': 'Failed to connect to database', 'QUERY': 'FAILED'})
+        image_url = uploader.upload_image(image)
+        values = (user_id, title, description, target_amount, image_url)
+        query = "INSERT INTO crowdfunding (user_id, title, description, target_amount, image_url) VALUES (%s, %s, %s, %s, %s)"
+        connection.insert_records(query, values)
+        return jsonify({'message': 'Crowdfunding created successfully', 'QUERY': 'OK'})
+    except Exception as e:
+        return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
+
+
+
+@app.route('/api/get-profile')
 def get_profile():
     if request.method != 'GET':
         return jsonify({'message': 'Invalid request method'})
@@ -39,22 +88,22 @@ def get_profile():
     if not user_id:
         return jsonify({'QUERY': 'FAILED', 'data': 'Invalid user_id'})
     try:
-        if connection:
-            query = "SELECT * FROM user_data WHERE ID = %s"
-            value = (user_id,)
-            result = connection.select_records(query, value)
-            if result:
-                result = list(result)
-                result[-1] = eval(result[-1])
-                return jsonify({'QUERY': 'OK', 'data': result})
-            else:
-                return jsonify({'QUERY': 'FAILED', 'data': 'No data found'})
-        return jsonify({'QUERY': 'FAILED', 'data': 'Failed to connect to database'})
+        if not connection :
+            return jsonify({'QUERY': 'FAILED', 'data': 'Failed to connect to database'})
+        query = "SELECT * FROM user_data WHERE ID = %s"
+        value = (user_id,)
+        result = connection.select_records(query, value)
+        if result:
+            result = list(result)
+            result[-1] = eval(result[-1])
+            return jsonify({'QUERY': 'OK', 'data': result})
+        else:
+            return jsonify({'QUERY': 'FAILED', 'data': 'No data found'})
     except Exception as e:
         return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
 
 
-@app.route('/update-profile', methods=['POST'])
+@app.route('/api/update-profile', methods=['POST'])
 def update_profile():
     if request.method != 'POST':
         return jsonify({'message': 'Invalid request method'})
@@ -76,7 +125,7 @@ def update_profile():
         return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
 
 
-@app.route('/delete-profile', methods=['POST'])
+@app.route('/api/delete-profile', methods=['POST'])
 def delete_profile():
     if request.method != 'POST':
         return jsonify({'message': 'Invalid request method'})
@@ -95,7 +144,7 @@ def delete_profile():
         return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
 
 
-@app.route('/upload-image', methods=['POST'])
+@app.route('/api/upload-image', methods=['POST'])
 def upload_image():
     if request.method != 'POST':
         return jsonify({'message': 'Invalid request method'})
@@ -119,14 +168,7 @@ def upload_image():
         return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
 
 
-@app.route("/create-meeting", methods=['GET'])
-def create_meeting():
-    meeting = ZoomMeeting()
-    result = meeting.create_meeting(topic="Test Meeting", duration=40, time=datetime.datetime.now())
-    return jsonify(result)
-
-
-@app.route('/shutdown')
+@app.route('/api/shutdown')
 def shutdown():
     connection.close_connection()
     return jsonify({'message': 'Server shutdown'})

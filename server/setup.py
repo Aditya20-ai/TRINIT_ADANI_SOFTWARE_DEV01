@@ -17,7 +17,7 @@ def create_db(connection):
     cursor.execute('USE ' + environ.get('DB_NAME'))
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS user_data (
-    ID varchar(255) PRIMARY KEY,
+    ID varchar(32) PRIMARY KEY,
     name varchar(32) NOT NULL,
     email varchar(32) UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -26,15 +26,15 @@ def create_db(connection):
     """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS ngo_data (
-    USER_ID varchar(255) NOT NULL,
-    NGO_ID varchar(255) PRIMARY KEY,
+    USER_ID varchar(32) NOT NULL,
+    NGO_ID varchar(32) PRIMARY KEY,
     name varchar(32) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     mission varchar(255) NOT NULL,
     history varchar(255),
     impact varchar(255),
     plans varchar(255),
-    banner_url varchar(255),
+    banner_url varchar(64),
     funding_needs varchar(255) NOT NULL,
     location varchar(255) NOT NULL,
     type JSON NOT NULL
