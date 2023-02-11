@@ -1,8 +1,12 @@
+import os
+
 from .app import app, jsonify, request
 from .utils import MysqlConnection, UploadHandler, list_parser
 from secrets import randbits
+
 connection = MysqlConnection()
 uploader = UploadHandler()
+
 
 @app.route('/api/create-profile', methods=['POST'])
 def create_profile():
@@ -15,7 +19,7 @@ def create_profile():
     name = data['name']
     email = data['email']
     donation_preferences = data['donation_preferences']
-    try:        
+    try:
         if not connection:
             return jsonify({'message': 'Failed to connect to database', 'QUERY': 'FAILED'})
         values = (user_id, name, email, donation_preferences)
@@ -23,7 +27,8 @@ def create_profile():
         connection.insert_records(query, values)
         return jsonify({'message': 'Profile created successfully', 'QUERY': 'OK'})
     except Exception as e:
-        return jsonify({'QUERY': 'FAILED', 'data' : {'error':  str(e)}})
+        return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
+
 
 @app.route('/api/create-crowdfunding', methods=['POST'])
 def create_crowdfunding():
@@ -71,7 +76,8 @@ def create_crowdfunding():
         connection.insert_records(query, values)
         return jsonify({'message': 'Crowdfunding created successfully', 'QUERY': 'OK'})
     except Exception as e:
-        return jsonify({'QUERY': 'FAILED', 'data' : {'error':  str(e)}})
+        return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
+
 
 
 @app.route('/api/get-profile')
@@ -94,7 +100,8 @@ def get_profile():
         else:
             return jsonify({'QUERY': 'FAILED', 'data': 'No data found'})
     except Exception as e:
-        return jsonify({'QUERY': 'FAILED', 'data' : {'error':  str(e)}})
+        return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
+
 
 @app.route('/api/update-profile', methods=['POST'])
 def update_profile():
@@ -115,7 +122,8 @@ def update_profile():
         connection.insert_records(query, values)
         return jsonify({'message': 'Profile updated successfully', 'QUERY': 'OK'})
     except Exception as e:
-        return jsonify({'QUERY': 'FAILED', 'data' : {'error':  str(e)}})
+        return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
+
 
 @app.route('/api/delete-profile', methods=['POST'])
 def delete_profile():
@@ -133,7 +141,7 @@ def delete_profile():
         connection.insert_records(query, values)
         return jsonify({'message': 'Profile deleted successfully', 'QUERY': 'OK'})
     except Exception as e:
-        return jsonify({'QUERY': 'FAILED', 'data' : {'error':  str(e)}})
+        return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
 
 
 @app.route('/api/upload-image', methods=['POST'])
@@ -143,18 +151,22 @@ def upload_image():
 
     if not (data := request.files):
         return jsonify({'message': 'Invalid data'})
-    image = data['image']
+    image = data['file']
     try:
-        if connection :
+        if connection:
             image_filename = f"{randbits(64)}.png"
-            image_path = f"server/temp/images/{image_filename}"
+            if not os.path.exists('temp/images'):
+                os.makedirs('temp/images')
+            image_path = f"temp/images/{image_filename}"
             image.save(image_path)
             image_link = uploader.upload_image(image_path)
+            os.remove(image_path)
             return jsonify({'message': 'Image uploaded successfully', 'QUERY': 'OK', 'data': image_link})
         else:
             return jsonify({'message': 'Failed to connect to database', 'QUERY': 'FAILED'})
     except Exception as e:
-        return jsonify({'QUERY': 'FAILED', 'data' : {'error':  str(e)}})
+        return jsonify({'QUERY': 'FAILED', 'data': {'error': str(e)}})
+
 
 @app.route('/api/shutdown')
 def shutdown():
